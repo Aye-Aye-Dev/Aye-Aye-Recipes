@@ -17,4 +17,4 @@ pipenv install --dev
 
 | Recipe | Description |
 | --- | --- |
-| [IMDB](./IMDB/README.md) | Extracts films from IMDB's public data; encodes a small selection of fields into a JSON doc. and stores these in a Kafka topic.|
+| [IMDB](./imdb/) | Extracts films from IMDB's public data; encodes a small selection of fields into a JSON doc. and stores these in a Kafka topic.|
