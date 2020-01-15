@@ -1,0 +1,13 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+
+[packages]
+ayeaye = {editable = true,git = "https://github.com/Aye-Aye-Dev/AyeAye"}
+kafka-python = "*"
+
+[requires]
+python_version = "3.7"
