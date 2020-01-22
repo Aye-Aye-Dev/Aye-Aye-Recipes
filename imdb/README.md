@@ -28,3 +28,10 @@ The recipe assumes Kafka is running on the localhost. Edit the file if this isn'
 ```
 python films_to_kafka.py
 ```
+
+These data can be read back to build a summary of film genres:
+```
+python genre_summary.py
+```
+
+The summary should be written to another dataset but this demo is incomplete and it just writes to the log.
