@@ -9,18 +9,22 @@ import ayeaye
 
 from films_to_kafka import Film2Kafka
 
-DEBUG=True
+DEBUG = True
+
 
 class FilmGenresSummary(ayeaye.Model):
     """
     Read the extract of IMDB film data from Kafka and count number of films within each genre.
-    Output the summary to XXXX format.
+    Output the summary to a JSON document.
     """
 
-    input_stream = Film2Kafka.output_stream(access=ayeaye.AccessMode.READ)
+    input_stream = Film2Kafka.output_stream.clone(access=ayeaye.AccessMode.READ)
+    genre_summary = ayeaye.Connect(engine_url="json://films_summary.json",
+                                   access=ayeaye.AccessMode.WRITE
+                                   )
 
     def build(self):
-        
+
         self.log("Building a summary of films in the Kafka store")
         genre_summary = defaultdict(int)
         films_processed = 0
@@ -38,15 +42,18 @@ class FilmGenresSummary(ayeaye.Model):
             films_processed += 1
 
             # occasionally tell the user how complete the processing is
-            msg = f"{films_processed} films processes." 
+            msg = f"{films_processed} films processes."
             self.log_progress(self.input_stream.progress, msg=msg)
 
-
-        # TODO output this as a dataset. For now, just log it
+        # Output log of the summary ...
         for genre_name, film_count in genre_summary.items():
             self.log(f"{genre_name} : {film_count} films")
 
+        # ... and output the summary as a dataset
+        self.genre_summary.data = genre_summary
+        self.log(f"Summary written to {self.genre_summary.engine_url}")
         self.log(f"Complete! Processed {films_processed} films.")
+
 
 if __name__ == '__main__':
     a = FilmGenresSummary()
