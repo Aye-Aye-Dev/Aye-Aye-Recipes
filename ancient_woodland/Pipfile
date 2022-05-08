@@ -5,8 +5,12 @@ name = "pypi"
 
 [packages]
 ayeaye = "*"
+rasterio = "*"
+shapely = "*"
+numpy = "*"
+pyproj = "*"
 
 [dev-packages]
 
 [requires]
-python_version = "3.9"
+python_version = "3.8"
