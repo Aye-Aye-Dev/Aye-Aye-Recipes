@@ -166,4 +166,8 @@ class TestAncientWoodland(unittest.TestCase):
             csv_reader = csv.DictReader(f)
             single_row = next(csv_reader)
 
-        self.assertAlmostEqual(expected_overlap, float(single_row["area_in_nature_reserves"]), places=3, msg=msg)
+        self.assertAlmostEqual(expected_overlap, float(single_row["area_in_nature_reserve"]), places=3, msg=msg)
+
+        msg = "area of fake ancient woodland is: box_side x box_side -> km sq"
+        expected_area = (100 * 100) / (1000 * 1000)
+        self.assertAlmostEqual(expected_area, float(single_row["total_area"]), places=3, msg=msg)

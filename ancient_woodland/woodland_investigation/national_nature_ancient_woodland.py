@@ -7,6 +7,8 @@ from shapely.ops import transform
 class NationalNatureAncientWoodland(ayeaye.Model):
     """
     Find intersections between ancient woodland and national nature reserves.
+    see https://data.gov.uk/dataset/726484b0-d14e-44a3-9621-29e79fc47bfc/national-nature-reserves-england
+    data from https://naturalengland-defra.opendata.arcgis.com/datasets/Defra::national-nature-reserves-england/about
     """
 
     ancient_woodland = ayeaye.Connect(
@@ -20,7 +22,7 @@ class NationalNatureAncientWoodland(ayeaye.Model):
     within_nature_reserves = ayeaye.Connect(
         engine_url="csv:///Users/si/Documents/Scratch/NaturalEngland/Ancient_woodland_inside_nature_reserves.csv",
         access=ayeaye.AccessMode.WRITE,
-        field_names=["OBJECTID", "name", "area_in_nature_reserves"],
+        field_names=["OBJECTID", "name", "area_in_nature_reserve", "total_area"],
     )
 
     def build(self):
@@ -52,13 +54,15 @@ class NationalNatureAncientWoodland(ayeaye.Model):
                 continue
 
             geom = shape(ancient_woodland.geometry)
+            woodland_area = transform(re_project_coord, geom).area / (1000 * 1000)  # km sq
             woodland_extract = ayeaye.Pinnate(
                 {
                     "OBJECTID": properties.OBJECTID,
                     "name": properties.NAME,
                     "geom": geom,
                     "bounding": box(*geom.bounds),
-                    "area_in_nature_reserves": 0.0,  # square kilometres are added below
+                    "area_in_nature_reserve": 0.0,  # square kilometres are added below
+                    "total_area": woodland_area,
                 }
             )
             if woodland_extract.name.strip() == "":
@@ -96,7 +100,7 @@ class NationalNatureAncientWoodland(ayeaye.Model):
                     # the output must be in square kilometres. One way to do this is
                     # to use the OSGB map projection. See note above.
                     as_osgb = transform(re_project_coord, overlap)
-                    ancient_woodland.area_in_nature_reserves += as_osgb.area / (1000 * 1000)
+                    ancient_woodland.area_in_nature_reserve += as_osgb.area / (1000 * 1000)
 
         self.log("Writing output")
         for ancient_woodland in woodland:
