@@ -18,3 +18,4 @@ pipenv install --dev
 | Recipe | Description |
 | --- | --- |
 | [IMDB](./imdb/) | Extracts films from IMDB's public data; encodes a small selection of fields into a JSON doc. and stores these in a Kafka topic.|
+| [Ancient woodland](./ancient_woodland/) | GIS example using public data from Natural England.|
