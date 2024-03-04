@@ -83,7 +83,9 @@ class TestAncientWoodland(unittest.TestCase):
             ],
         }
 
-        fake_nature_reserve_path = os.path.join(self.working_directory(), "fake_nature_reserve.geojson")
+        fake_nature_reserve_path = os.path.join(
+            self.working_directory(), "fake_nature_reserve.geojson"
+        )
         with open(fake_nature_reserve_path, "w") as f:
             json.dump(nature_reserve, f)
 
@@ -101,11 +103,11 @@ class TestAncientWoodland(unittest.TestCase):
                     "type": "Feature",
                     "properties": {
                         "OBJECTID": 1,
-                        "NAME": "Long wood",
-                        "THEME": "ancient woodland",
-                        "THEMNAME": "Ancient & Semi-Natural Woodland",
+                        "name": "Long wood",
+                        "theme": "ancient woodland",
+                        "themname": "Ancient & Semi-Natural Woodland",
                         "THEMID": 1481207.0,
-                        "STATUS": "ASNW",
+                        "status": "ASNW",
                     },
                     "geometry": {
                         "type": "MultiPolygon",
@@ -124,7 +126,9 @@ class TestAncientWoodland(unittest.TestCase):
                 }
             ],
         }
-        fake_ancient_woodland_path = os.path.join(self.working_directory(), "fake_ancient_woodland.geojson")
+        fake_ancient_woodland_path = os.path.join(
+            self.working_directory(), "fake_ancient_woodland.geojson"
+        )
         with open(fake_ancient_woodland_path, "w") as f:
             json.dump(ancient_woodland, f)
 
@@ -166,7 +170,9 @@ class TestAncientWoodland(unittest.TestCase):
             csv_reader = csv.DictReader(f)
             single_row = next(csv_reader)
 
-        self.assertAlmostEqual(expected_overlap, float(single_row["area_in_nature_reserve"]), places=3, msg=msg)
+        self.assertAlmostEqual(
+            expected_overlap, float(single_row["area_in_nature_reserve"]), places=3, msg=msg
+        )
 
         msg = "area of fake ancient woodland is: box_side x box_side -> km sq"
         expected_area = (100 * 100) / (1000 * 1000)

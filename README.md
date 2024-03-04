@@ -11,7 +11,13 @@ For all recipes create a *recipe venv*. Assuming your current working directory 
 cd <recipe>
 pipenv shell
 pipenv install --dev
-``` 
+```
+
+Some examples have unittests. If you like, run them-
+
+```shell
+python -m unittest discover
+```
 
 ## Recipes summary
 
