@@ -7,26 +7,26 @@ from shapely.ops import transform
 class NationalNatureAncientWoodland(ayeaye.Model):
     """
     Find intersections between ancient woodland and national nature reserves.
-    see https://data.gov.uk/dataset/726484b0-d14e-44a3-9621-29e79fc47bfc/national-nature-reserves-england
+    see README.md alongside this file.
+    Also see https://data.gov.uk/dataset/726484b0-d14e-44a3-9621-29e79fc47bfc/national-nature-reserves-england
     data from https://naturalengland-defra.opendata.arcgis.com/datasets/Defra::national-nature-reserves-england/about
     """
 
     ancient_woodland = ayeaye.Connect(
-        engine_url="json:///Users/si/Documents/Scratch/NaturalEngland/Ancient_Woodland_(England).geojson"
+        engine_url="json://../NaturalEngland/Ancient_Woodland_Extract.json"
     )
 
     nature_reserves = ayeaye.Connect(
-        engine_url="json:///Users/si/Documents/Scratch/NaturalEngland/National_Nature_Reserves_(England).geojson"
+        engine_url="json://../NaturalEngland/National_Nature_Reserves_England.json"
     )
 
     within_nature_reserves = ayeaye.Connect(
-        engine_url="csv:///Users/si/Documents/Scratch/NaturalEngland/Ancient_woodland_inside_nature_reserves.csv",
+        engine_url="csv://../Ancient_woodland_inside_national_nature_reserves.csv",
         access=ayeaye.AccessMode.WRITE,
         field_names=["OBJECTID", "name", "area_in_nature_reserve", "total_area"],
     )
 
     def build(self):
-
         self.log("Loading map co-ordinate transformer")
         # co-ordinate system for the most familiar 'latitude/longitude' co-ordinate system
         wgs84 = pyproj.CRS("EPSG:4326")
@@ -43,11 +43,10 @@ class NationalNatureAncientWoodland(ayeaye.Model):
         woodland = []
         woodland_types = set()
         for row_number, ancient_woodland in enumerate(self.ancient_woodland.data.features):
-
             properties = ancient_woodland.properties
-            woodland_types.add((properties.THEME, properties.THEMNAME, properties.STATUS))
+            woodland_types.add((properties.theme, properties.themname, properties.status))
 
-            if properties.STATUS == "PAWS":
+            if properties.status == "PAWS":
                 # PAWS = 'Ancient Replanted Woodland', see 'THEMNAME' field
                 # This is a commercial plantation in the site of ancient woodland. This doesn't
                 # count as ancient woodland!
@@ -57,8 +56,8 @@ class NationalNatureAncientWoodland(ayeaye.Model):
             woodland_area = transform(re_project_coord, geom).area / (1000 * 1000)  # km sq
             woodland_extract = ayeaye.Pinnate(
                 {
-                    "OBJECTID": properties.OBJECTID,
-                    "name": properties.NAME,
+                    "OBJECTID": row_number,  # was properties.objectid,
+                    "name": properties.name,
                     "geom": geom,
                     "bounding": box(*geom.bounds),
                     "area_in_nature_reserve": 0.0,  # square kilometres are added below
@@ -78,7 +77,6 @@ class NationalNatureAncientWoodland(ayeaye.Model):
         self.log(f"Found {nature_reserves_count} nature reserves")
 
         for row_number, nature_reserve in enumerate(self.nature_reserves.data.features):
-
             nature_reserve_geom = shape(nature_reserve.geometry)
             nature_reserve_bounding = box(*nature_reserve_geom.bounds)
 
@@ -91,7 +89,6 @@ class NationalNatureAncientWoodland(ayeaye.Model):
             # other than a bounding box check there is no consideration of efficiency. For example,
             # use of a spatial index.
             for ancient_woodland in woodland:
-
                 if not ancient_woodland.bounding.intersects(nature_reserve_bounding):
                     continue
 
@@ -104,7 +101,9 @@ class NationalNatureAncientWoodland(ayeaye.Model):
 
         self.log("Writing output")
         for ancient_woodland in woodland:
-            record_subset = {k: ancient_woodland[k] for k in self.within_nature_reserves.field_names}
+            record_subset = {
+                k: ancient_woodland[k] for k in self.within_nature_reserves.field_names
+            }
             self.within_nature_reserves.add(record_subset)
 
         self.log(f"All done!")

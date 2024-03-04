@@ -21,12 +21,11 @@ class OverallSummary(ayeaye.Model):
     )
 
     summary = ayeaye.Connect(
-        engine_url="json:///Users/si/Documents/Scratch/NaturalEngland/summary.json;indent=4",
+        engine_url="json://../summary.json;indent=4",
         access=ayeaye.AccessMode.WRITE,
     )
 
     def build(self):
-
         # each ancient woodland area should have it's `total_area` in both self.within_local and
         # self.within_national but to make the join slightly safer use a set of IDs and only
         # count the area once. This way an ancient woodland could exist in either or both and would
@@ -37,7 +36,6 @@ class OverallSummary(ayeaye.Model):
         area_within = 0.0
 
         for woodland in itertools.chain(self.within_local, self.within_national):
-
             if woodland.OBJECTID not in already_seen:
                 already_seen.add(woodland.OBJECTID)
                 area_total += float(woodland.total_area)
