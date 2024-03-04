@@ -1,0 +1,12 @@
+- name: Connect to Pulumi created EC2 instance and install app and make it a NAT router
+  hosts: all
+  gather_facts: no
+  remote_user: ubuntu
+  become: yes
+
+  tasks:
+    - name: Kernel routing - note this wont survive a reboot
+      shell: "/usr/sbin/sysctl --write net.ipv4.ip_forward=1"
+
+    - name: Kernel NAT - note this wont survive a reboot
+      shell: "/usr/sbin/iptables -t nat -A POSTROUTING -o ens5 -s 192.168.2.0/24 -j MASQUERADE"
