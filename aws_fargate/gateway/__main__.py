@@ -7,7 +7,7 @@ See top level README.md
 import os
 
 import pulumi
-from pulumi_aws import ec2
+from pulumi_aws import ec2, get_caller_identity as aws_get_caller_identity, iam
 
 
 pulumi_organisation = os.environ["PULUMI_ORGANISATION"]
@@ -16,8 +16,11 @@ config = pulumi.Config()
 ec2_keypair_name = config.require("ec2_keypair_name")
 
 aws_config = pulumi.Config("aws")
-
 aws_region = aws_config.require("region")
+
+aws_user = aws_get_caller_identity()
+# This is used by ansible when building the docker image
+pulumi.export("aws_account_id", aws_user.account_id)
 
 stack_name = pulumi.get_stack()
 stack_label = f"gateway_{stack_name}"
@@ -27,7 +30,7 @@ subnets = network_outputs.require_output("subnets")
 public_subnet_id = subnets[f"networks_{stack_name}_subnet_a"]["id"]
 private_subnet_id = subnets[f"networks_{stack_name}_subnet_b"]["id"]
 
-ec2_instance_size = "t4g.nano"
+ec2_instance_size = "t2.medium"
 ec2_instance_name = "fossa_gateway"
 ec2_ami_owner = "099720109477"  # Ubuntu
 
@@ -37,7 +40,7 @@ ami = ec2.get_ami(
     filters=[
         ec2.GetAmiFilterArgs(name="name", values=["ubuntu/images/hvm-ssd/ubuntu-focal-20.04*"]),
         ec2.GetAmiFilterArgs(name="root-device-type", values=["ebs"]),
-        ec2.GetAmiFilterArgs(name="architecture", values=["arm64"]),
+        ec2.GetAmiFilterArgs(name="architecture", values=["x86_64"]),
     ],
 )
 
@@ -71,6 +74,43 @@ for port, description in [
 ]:
     security_groups.append(build_simple_security_group(port, description))
 
+
+# General policy without project specific restrictions
+gateway_instance_policy = """{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "",
+            "Effect": "Allow",
+            "Action": "ecr:*",
+            "Resource": "*"
+        }
+    ]
+}"""
+
+instance_role = iam.Role(
+    "gateway_policy",
+    path="/",
+    assume_role_policy="""{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": "sts:AssumeRole",
+            "Principal": {
+               "Service": "ec2.amazonaws.com"
+            },
+            "Effect": "Allow",
+            "Sid": ""
+        }
+    ]
+}
+""",
+    inline_policies=[
+        iam.RoleInlinePolicyArgs(name="gateway_instance_policy", policy=gateway_instance_policy)
+    ],
+)
+instance_profile = iam.InstanceProfile("instance_profile", role=instance_role.name)
+
 # Create EC2 instance
 ec2_instance = ec2.Instance(
     ec2_instance_name,
@@ -81,6 +121,7 @@ ec2_instance = ec2.Instance(
     associate_public_ip_address=True,
     subnet_id=public_subnet_id,
     source_dest_check=False,  # needed to act as NAT gateway
+    iam_instance_profile=instance_profile.id,
     tags={
         "Name": ec2_instance_name,
     },

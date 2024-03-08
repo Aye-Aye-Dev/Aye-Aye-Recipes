@@ -23,7 +23,7 @@ First, [setup Pulumi](https://www.pulumi.com/docs/get-started/).
 
 The orchestration and provisioning has been split into sub-projects. This will make it easier to pick and choose from my opiniated stack. There are 3 sub-projects which each have a corresponding sub-directory-
 
-* networks - 
+* networks
 * gateway
 * cluster
 
