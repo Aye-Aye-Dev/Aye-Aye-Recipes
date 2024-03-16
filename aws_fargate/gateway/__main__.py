@@ -38,7 +38,7 @@ ami = ec2.get_ami(
     most_recent="true",
     owners=[ec2_ami_owner],
     filters=[
-        ec2.GetAmiFilterArgs(name="name", values=["ubuntu/images/hvm-ssd/ubuntu-focal-20.04*"]),
+        ec2.GetAmiFilterArgs(name="name", values=["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04*"]),
         ec2.GetAmiFilterArgs(name="root-device-type", values=["ebs"]),
         ec2.GetAmiFilterArgs(name="architecture", values=["x86_64"]),
     ],

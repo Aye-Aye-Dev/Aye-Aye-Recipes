@@ -34,13 +34,32 @@
         state: latest
         update_cache: yes
   
-    - name: Installing packages common to all deployed projects
+    - name: Installing packages
       apt:
         pkg:
         - awscli
         - python3-pip
         - python3-apt # needed by ansible's apt command to install .deb urls. i.e. cloudwatch agent
-        - docker.io
+        - docker.io # this is removed after the build
+        - iptables-persistent
+
+    - name: Kernel routing
+      lineinfile:
+        state: present
+        path: /etc/sysctl.conf
+        line: "net.ipv4.ip_forward=1"
+
+    - name: Reload sysctl for kernel routing
+      shell: "/usr/sbin/sysctl --system"
+
+    - name: Kernel NAT
+      shell: "/usr/sbin/iptables -t nat -A POSTROUTING -o eth0 -s 192.168.2.0/24 -j MASQUERADE"
+
+    - name: Stop docker from blocking forwarding as this is also a router
+      shell: "iptables -P FORWARD ACCEPT"
+
+    - name: Save Kernel NAT
+      shell: "/usr/sbin/iptables-save -c > /etc/iptables/rules.v4"
 
     - name: Apps directory
       file:
@@ -58,6 +77,36 @@
         group: "{{ runtime_user_group }}"
         mode: 0755
 
+    - name: Install pipenv globally from pypi not Ubuntu
+      ansible.builtin.pip:
+        name:
+          - pipenv
+
+    - name: Run a pipenv install
+      environment:
+        LANG: "en_GB.UTF-8"
+      command: "/usr/local/bin/pipenv install"
+      args:
+        chdir: "{{ apps_root }}fossa_gateway"
+
+    - name: systemd service file
+      template:
+        src: templates/systemd.service
+        dest: "/etc/systemd/system/fossa_gateway.service"
+        owner: root
+        group: root
+        mode: 0644
+      vars:
+        app_name: 'fossa_gateway'
+        display_name: 'Fossa Gateway'
+        execute_as: "{{ runtime_user }}"
+        app_path: "{{ apps_root }}fossa_gateway"
+        working_dir: "{{ apps_root }}fossa_gateway"
+        python_path: "{{ apps_root }}fossa_gateway"
+
+    - name: Enable systemd service
+      shell: "/usr/bin/systemctl enable fossa_gateway.service"
+
     - name: Docker build worker image
       shell: "cd {{ apps_root }}/fossa_worker; /usr/bin/docker build -t fossa-worker ."
 
@@ -69,18 +118,3 @@
 
     - name: Docker image push
       shell: "/usr/bin/docker push {{ ecr_uri }}/{{ ecr_repository }}:fossa-worker"
-
-    - name: Kernel routing
-      lineinfile:
-        state: present
-        path: /etc/sysctl.conf
-        line: "net.ipv4.ip_forward=1"
-
-    - name: Reload sysctl for kernel routing
-      shell: "/usr/sbin/sysctl --system"
-
-    - name: Kernel NAT
-      shell: "/usr/sbin/iptables -t nat -A POSTROUTING -o eth0 -s 192.168.2.0/24 -j MASQUERADE"
-
-    - name: Save Kernel NAT - not confirmed to work after reboot
-      shell: "/usr/sbin/iptables-save > /etc/iptables.rules"

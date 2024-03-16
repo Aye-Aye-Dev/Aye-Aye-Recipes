@@ -178,6 +178,7 @@ rabbitmq_task_definition = ecs.TaskDefinition(
     ),
 )
 
+
 rabbitmq_service = ecs.Service(
     "rabbitmq-service",
     cluster=app_cluster.arn,
@@ -190,14 +191,15 @@ rabbitmq_service = ecs.Service(
         subnets=[private_subnet_id],
         security_groups=simple_security_groups(rabbitmq_port),
     ),
-    # service_registries=[ecs.ServiceServiceRegistriesArgs(registry_arn=http_namespace.arn)],
+    # service_registries=ecs.ServiceServiceRegistriesArgs(registry_arn=http_namespace.arn),
 )
 
 
 def build_rabbitmq_url(*callback_args):
     """
-    Get the IP address of the rabbit mq task/container. This is a hack!
-    Incorrect methodology warning - the ECS cluster should declare the RabbitMQ service using
+    Get the IP address of the rabbit mq task/container. This is a hack to work around the
+    problem with 'service_registries' arg to `ecs.Service`.
+    Incorrect methodology warning - the ECS cluster will later declare the RabbitMQ service using
     Cloud Map or some other service discovery mechanism.
 
     @returns (str) ip address after checking it's a single task in this service
