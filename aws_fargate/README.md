@@ -35,6 +35,7 @@ Note-
 * use your preferred AWS region. e.g. `eu-west-2`
 * the pulumi organisation could be the name of the individual's account. It's needed when retrieving stack outputs from other sub-projects.
 * 'gateway' sub-project also needs `pulumi config set ec2_keypair_name xxxx` where xxxx is the name of an already active key pair.
+* 'gateway' sub-project also needs `export GATEWAY_HTTP_PASSWORD=supersecret` replace `supersecret` with your password.
 
 ```shell
 export PULUMI_ORGANISATION=xxxxxx
@@ -42,6 +43,8 @@ pulumi stack init dev
 pulumi config set aws:region eu-west-2
 ./go.sh dev
 ```
+
+Point a web browser at the gateway's ip address, use 'http', not 'https'. The username will be 'fossa' and the password will be whatever you exported into `GATEWAY_HTTP_PASSWORD`.
 
 ## Clean-up
 

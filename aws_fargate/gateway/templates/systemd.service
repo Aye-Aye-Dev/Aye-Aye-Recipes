@@ -1,0 +1,17 @@
+[Unit]
+Description={{display_name}} service
+After=network.target remote-fs.target nss-lookup.target
+
+[Service]
+ExecStart=/usr/local/bin/pipenv run python -u {{app_path}}/main.py
+Environment=DEPLOYMENT_ENVIRONMENT=Prod
+Environment=HTTP_USER_PASSWORD={{http_user_password}}
+WorkingDirectory={{working_dir}}
+StandardOutput=inherit
+StandardError=inherit
+Restart=always
+User={{execute_as}}
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

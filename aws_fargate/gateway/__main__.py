@@ -84,6 +84,31 @@ gateway_instance_policy = """{
             "Effect": "Allow",
             "Action": "ecr:*",
             "Resource": "*"
+        },
+        {
+            "Sid": "",
+            "Effect": "Allow",
+            "Action": [
+                "ecs:ListServicesByNamespace",
+                "ecs:GetTaskProtection",
+                "ecs:ListAttributes",
+                "ecs:DescribeTaskSets",
+                "ecs:DescribeTaskDefinition",
+                "ecs:DescribeClusters",
+                "ecs:ListServices",
+                "ecs:ListAccountSettings",
+                "ecs:DescribeCapacityProviders",
+                "ecs:ListTagsForResource",
+                "ecs:ListTasks",
+                "ecs:ListTaskDefinitionFamilies",
+                "ecs:DescribeServices",
+                "ecs:ListContainerInstances",
+                "ecs:DescribeContainerInstances",
+                "ecs:DescribeTasks",
+                "ecs:ListTaskDefinitions",
+                "ecs:ListClusters"
+            ],
+            "Resource": "*"
         }
     ]
 }"""

@@ -23,6 +23,7 @@
         apps_root: /data/apps/
         runtime_user: ubuntu
         runtime_user_group: ubuntu
+        http_user_password: "'{{ lookup('ansible.builtin.env', 'GATEWAY_HTTP_PASSWORD') }}'"
         ecr_repository: demo
 
     - set_fact:
@@ -99,13 +100,14 @@
       vars:
         app_name: 'fossa_gateway'
         display_name: 'Fossa Gateway'
-        execute_as: "{{ runtime_user }}"
+        execute_as: root
         app_path: "{{ apps_root }}fossa_gateway"
         working_dir: "{{ apps_root }}fossa_gateway"
         python_path: "{{ apps_root }}fossa_gateway"
+        http_user_password: "{{http_user_password}}"
 
-    - name: Enable systemd service
-      shell: "/usr/bin/systemctl enable fossa_gateway.service"
+    - name: Enable and start systemd service
+      shell: "/usr/bin/systemctl enable fossa_gateway.service; /usr/bin/systemctl start fossa_gateway.service"
 
     - name: Docker build worker image
       shell: "cd {{ apps_root }}/fossa_worker; /usr/bin/docker build -t fossa-worker ."
