@@ -110,7 +110,7 @@
       shell: "/usr/bin/systemctl enable fossa_gateway.service; /usr/bin/systemctl start fossa_gateway.service"
 
     - name: Docker build worker image
-      shell: "cd {{ apps_root }}/fossa_worker; /usr/bin/docker build -t fossa-worker ."
+      shell: "cd {{ apps_root }}/fossa_worker; /usr/bin/docker build --no-cache -t fossa-worker ."
 
     - name: Docker tag for ECR
       shell: "cd {{ apps_root }}/fossa_worker; /usr/bin/docker tag fossa-worker:latest {{ ecr_uri }}/{{ ecr_repository }}:fossa-worker"

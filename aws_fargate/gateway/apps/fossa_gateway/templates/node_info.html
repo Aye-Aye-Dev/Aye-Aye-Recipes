@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block body_content %}
+
+<h1>Fossa node info from {{ipv4}} in {{cluster_arn}}</h1>
+
+
+<h2>Node info</h2>
+
+<table class="table table-striped">
+  <tbody>
+  {%for key,value in node_info.items()%}
+    <tr>
+      <th>{{key}}</th>
+      <td>{{value}}</td>
+    </tr>
+  {%endfor%}
+  </tbody>
+</table>
+
+
+<h2>Recently Completed Tasks</h2>
+{%if recent_completed_tasks %}
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th scope="col">Model class</th>
+      <th scope="col">Method</th>
+      <th scope="col">Method kwargs</th>
+      <th scope="col">Resolver context</th>
+      <th scope="col">Started</th>
+      <th scope="col">Finished</th>
+      <th scope="col">Results</th>
+    </tr>
+  </thead>
+  <tbody>
+  {%for t in recent_completed_tasks%}
+    <tr>
+      <td>{{t.model_class}}</td>
+      <td>{{t.method}}</td>
+      <td>{{t.method_kwargs}}</td>
+      <td>{{t.resolver_context}}</td>
+      <td>{{t.started}}</td>
+      <td>{{t.finished}}</td>
+      <td>{{t.results}}</td>
+    </tr>
+  {%endfor%}
+  </tbody>
+</table>
+{%else%}
+<p>This Fossa node hasn't run any tasks since it started.</p>
+{%endif%}
+
+{% endblock %}

@@ -46,6 +46,23 @@ pulumi config set aws:region eu-west-2
 
 Point a web browser at the gateway's ip address, use 'http', not 'https'. The username will be 'fossa' and the password will be whatever you exported into `GATEWAY_HTTP_PASSWORD`.
 
+
+## Running a task
+
+Pointing a brower at the gateway will list running tasks.
+
+Soon, it will be possible to post a task to the gateway's web interface. For now, ssh into the gateway and use curl. Replace the IP address in this curl command with that of a running task.
+
+
+```shell
+curl --header "Content-Type: application/json" \
+     --data '{"model_class":"PartitionedExampleEtl"}'  \
+     --request POST http://192.168.0.0:2345/api/0.01/task
+```
+
+Viewing each task in the Gateway's listing will show details of subtasks run on each fossa node (i.e. by each ECS task).
+
+
 ## Clean-up
 
 To tidy up and delete all the resources when you are done go into the sub-directoy for each sub-project in reverse order and run-
