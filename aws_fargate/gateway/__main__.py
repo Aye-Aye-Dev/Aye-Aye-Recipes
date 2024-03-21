@@ -7,7 +7,7 @@ See top level README.md
 import os
 
 import pulumi
-from pulumi_aws import ec2, get_caller_identity as aws_get_caller_identity, iam
+from pulumi_aws import ec2, ecr, get_caller_identity as aws_get_caller_identity, iam
 
 
 pulumi_organisation = os.environ["PULUMI_ORGANISATION"]
@@ -177,3 +177,14 @@ route_table_association = ec2.RouteTableAssociation(
     subnet_id=private_subnet_id,
     route_table_id=route_table_private.id,
 )
+
+# Container images
+ecr_name = "fossa_images"
+fossa_images = ecr.Repository(
+    ecr_name,
+    name=ecr_name,
+    image_tag_mutability="MUTABLE",
+)
+
+pulumi.export("fossa_containers_repository_url", fossa_images.repository_url)
+pulumi.export("fossa_containers_repository_id", fossa_images.id)

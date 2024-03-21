@@ -29,11 +29,15 @@ def task_summary(cluster_arn):
         - lastStatus
         - group
         - ipv4_private
+        - task_id
     """
     if cluster_arn not in cluster_arns():
         raise ValueError("Unknown cluster arn")
 
     tasks = ecs.list_tasks(cluster=cluster_arn)
+
+    if "taskArns" not in tasks or len(tasks["taskArns"]) == 0:
+        return []
 
     describe_tasks = ecs.describe_tasks(
         cluster=cluster_arn,
@@ -50,6 +54,11 @@ def task_summary(cluster_arn):
             network_interfaces = task_details["containers"][0].get("networkInterfaces", [])
             if len(network_interfaces) > 0:
                 summary["ipv4_private"] = network_interfaces[0].get("privateIpv4Address")
+
+        if "taskArn" in task_details:
+            arn_parts = task_details["taskArn"].split("/")
+            if len(arn_parts) > 0:
+                summary["task_id"] = arn_parts[-1]
 
         ts.append(summary)
 

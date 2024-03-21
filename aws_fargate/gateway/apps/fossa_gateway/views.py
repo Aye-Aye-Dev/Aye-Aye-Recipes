@@ -11,6 +11,9 @@ from controllers import cluster_arns, fossa_node_info, task_summary
 web_views = Blueprint("web", __name__)
 
 
+# TODO - login check for all of blueprint - @web_views.before_request
+
+
 def check_auth(username, password):
     "Check basic auth."
     return username == "fossa" and password == current_app.config.get("HTTP_USER_PASSWORD")

@@ -17,6 +17,12 @@
       delegate_to: "localhost"
       become: no
 
+    - name: Elastic container registry
+      shell: pulumi stack output fossa_containers_repository_url
+      register: pulumi_fossa_containers_repository_url
+      delegate_to: "localhost"
+      become: no
+
     - set_fact:
         aws_region: "{{ pulumi_aws_region.stdout }}"
         aws_account_id: "{{ pulumi_aws_account_id.stdout }}"
@@ -24,10 +30,7 @@
         runtime_user: ubuntu
         runtime_user_group: ubuntu
         http_user_password: "'{{ lookup('ansible.builtin.env', 'GATEWAY_HTTP_PASSWORD') }}'"
-        ecr_repository: demo
-
-    - set_fact:
-        ecr_uri: "{{ aws_account_id }}.dkr.ecr.{{ aws_region }}.amazonaws.com"
+        ecr_uri: "{{ pulumi_fossa_containers_repository_url.stdout }}"
 
     - name: Update all packages to their latest version
       apt:
@@ -113,10 +116,10 @@
       shell: "cd {{ apps_root }}/fossa_worker; /usr/bin/docker build --no-cache -t fossa-worker ."
 
     - name: Docker tag for ECR
-      shell: "cd {{ apps_root }}/fossa_worker; /usr/bin/docker tag fossa-worker:latest {{ ecr_uri }}/{{ ecr_repository }}:fossa-worker"
+      shell: "cd {{ apps_root }}/fossa_worker; /usr/bin/docker tag fossa-worker:latest {{ ecr_uri }}:fossa-worker"
      
     - name: Fetch ECR authentication
       shell: "/usr/bin/aws ecr get-login-password --region {{ aws_region }} | /usr/bin/docker login --username AWS --password-stdin {{ ecr_uri }}"
 
     - name: Docker image push
-      shell: "/usr/bin/docker push {{ ecr_uri }}/{{ ecr_repository }}:fossa-worker"
+      shell: "/usr/bin/docker push {{ ecr_uri }}:fossa-worker"

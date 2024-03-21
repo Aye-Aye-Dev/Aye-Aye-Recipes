@@ -23,10 +23,12 @@ network_outputs = pulumi.StackReference(f"{pulumi_organisation}/network/{stack_n
 vpc_id = network_outputs.require_output("vpc_id")
 subnets = network_outputs.require_output("subnets")
 private_subnet_id = subnets[f"networks_{stack_name}_subnet_b"]["id"]
+
+gateway_outputs = pulumi.StackReference(f"{pulumi_organisation}/gateway/{stack_name}")
+ecr_repository_name = gateway_outputs.require_output("fossa_containers_repository_id")
+
 fossa_port = 2345
 rabbitmq_port = 5672
-# TODO - build the ECR
-ecr_repository_name = "demo"
 
 
 def simple_security_groups(*ports):
@@ -116,6 +118,7 @@ log_group = cloudwatch.LogGroup(
     retention_in_days=7,
 )
 
+# TODO - Pulumi is broken around this. Waiting on their bug fix.
 # fossa_namespace = servicediscovery.PrivateDnsNamespace(
 #     "fossa",
 #     name="fossa",
@@ -280,7 +283,7 @@ fossa_security_groups = simple_security_groups(fossa_port)
 fossa_service = ecs.Service(
     "fossa-service",
     cluster=app_cluster.arn,
-    desired_count=2,
+    desired_count=4,
     launch_type="FARGATE",
     task_definition=fossa_task_definition.arn,
     wait_for_steady_state=False,

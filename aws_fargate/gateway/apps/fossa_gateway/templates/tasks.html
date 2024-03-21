@@ -10,6 +10,7 @@
       <th scope="col">Started</th>
       <th scope="col">Group</th>
       <th scope="col">Status</th>
+      <th scope="col">Task Id</th>
       <th scope="col">Private IPv4</th>
     </tr>
   </thead>
@@ -19,6 +20,7 @@
       <td>{{t.startedAt}}</td>
       <td>{{t.group}}</td>
       <td>{{t.lastStatus}}</td>
+      <td>{{t.task_id}}</td>
       <td>{% if t.group.startswith('service:fossa') %}
       		<a href="{{ url_for('web.node_info', ipv4=t.ipv4_private, cluster_arn_encoded=cluster_arn_encoded) }}">{{t.ipv4_private}}</a>
       	  {% else %}
