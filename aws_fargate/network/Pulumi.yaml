@@ -1,0 +1,3 @@
+name: network
+runtime: python
+description: Network foundations for Fossa on Fargate

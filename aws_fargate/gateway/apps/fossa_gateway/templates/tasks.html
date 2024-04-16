@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block body_content %}
+
+<h1>Tasks in {{cluster_arn}}</h1>
+
+{%if task_summary %}
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th scope="col">Started</th>
+      <th scope="col">Group</th>
+      <th scope="col">Status</th>
+      <th scope="col">Task Id</th>
+      <th scope="col">Private IPv4</th>
+    </tr>
+  </thead>
+  <tbody>
+  {%for t in task_summary %}
+    <tr>
+      <td>{{t.startedAt}}</td>
+      <td>{{t.group}}</td>
+      <td>{{t.lastStatus}}</td>
+      <td>{{t.task_id}}</td>
+      <td>{% if t.group.startswith('service:fossa') %}
+      		<a href="{{ url_for('web.node_info', ipv4=t.ipv4_private, cluster_arn_encoded=cluster_arn_encoded) }}">{{t.ipv4_private}}</a>
+      	  {% else %}
+      	  	{{t.ipv4_private}}
+      	  {% endif %}
+      </td>
+    </tr>
+  {%endfor%}
+  </tbody>
+</table>
+{%else%}
+<p>There are no tasks in the cluster.</p>
+{%endif%}
+
+
+
+
+{% endblock %}

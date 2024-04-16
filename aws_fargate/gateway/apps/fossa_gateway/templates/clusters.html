@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block body_content %}
+
+<h1>Available clusters</h1>
+
+<ul>
+{%for c in cluster_arns%}
+<li><a href="{{ url_for('web.tasks', cluster_arn_encoded=c['url_encoded']) }}">{{c['arn']}}</a></li>
+{%endfor%}
+</ul>
+
+{% endblock %}
